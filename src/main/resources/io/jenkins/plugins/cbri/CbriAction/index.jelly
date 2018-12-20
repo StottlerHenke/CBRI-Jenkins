@@ -1,0 +1,75 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
+    <l:layout title="CBR Insight">
+        <l:side-panel>
+                    <st:include page="sidepanel.jelly" it="${it.run}" optional="true" />
+        </l:side-panel>
+        <l:main-panel>
+            <h1>
+                CBR Insight Analysis
+            </h1>
+            <table border="1">
+                <tr>
+                    <th>Date</th>
+                    <td>${it.today}</td>
+                </tr>
+                <tr>
+                    <th>architectureType</th>
+                    <td>${it.architectureType}</td>
+                </tr>
+                <tr>
+                    <th>propagationCost</th>
+                    <td>${it.propagationCost}</td>
+                </tr>
+                <tr>
+                    <th>core</th>
+                    <td>${it.core}</td>
+                </tr>
+                <tr>
+                    <th>coreSize</th>
+                    <td>${it.coreSize}</td>
+                </tr>
+                <tr>
+                    <th>percentFilesOverlyComplex</th>
+                    <td>${it.percentFilesOverlyComplex}</td>
+                </tr>
+                <tr>
+                    <th>duplicateUloc</th>
+                    <td>${it.duplicateUloc}</td>
+                </tr>
+                <tr>
+                    <th>uloc</th>
+                    <td>${it.uloc}</td>
+                </tr>
+                <tr>
+                    <th>percentDuplicateUloc</th>
+                    <td>${it.percentDuplicateUloc}</td>
+                </tr>
+                <tr>
+                    <th>usefulLinesComments</th>
+                    <td>${it.usefulLinesComments}</td>
+                </tr>
+                <tr>
+                    <th>usefulCommentDensity</th>
+                    <td>${it.usefulCommentDensity}</td>
+                </tr>
+                <tr>
+                    <th>numClasses</th>
+                    <td>${it.numClasses}</td>
+                </tr>
+                <tr>
+                    <th>numFiles</th>
+                    <td>${it.numFiles}</td>
+                </tr>
+                <tr>
+                    <th>numFilesInCore</th>
+                    <td>${it.numFilesInCore}</td>
+                </tr>
+                <tr>
+                    <th>numFilesOverlyComplex</th>
+                    <td>${it.numFilesOverlyComplex}</td>
+                </tr>
+            </table>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
