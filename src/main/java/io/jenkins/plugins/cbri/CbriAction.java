@@ -13,6 +13,7 @@ public class CbriAction implements RunAction2 {
     private transient Run run;
 
     Date today;
+    String revisionId = "";
 
     String architectureType = "Multi-Core";
     double propagationCost = 1;
@@ -125,4 +126,6 @@ public class CbriAction implements RunAction2 {
     public int getNumFilesOverlyComplex() {
         return numFilesOverlyComplex;
     }
+
+    public String getRevisionId() { return revisionId; }
 }

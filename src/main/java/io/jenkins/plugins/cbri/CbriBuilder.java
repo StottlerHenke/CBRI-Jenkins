@@ -68,6 +68,7 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
         //Perform the Understand measurements
         UnderstandWrapper undWrapper = new UnderstandWrapper(desc.getUndPath(), desc.getUndPerl(), desc.getPluginPath());
         CbriAction action = undWrapper.runUnderstand(lang, workspace, launcher, listener);
+        action.revisionId = "Jenkins-Build-" + run.getNumber();
 
         //Post the actions
         CbriWrapper cbriWrapper = new CbriWrapper(baseUrl, username, password, repoId);

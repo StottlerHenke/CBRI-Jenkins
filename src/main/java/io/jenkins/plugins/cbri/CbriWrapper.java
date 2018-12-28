@@ -98,6 +98,7 @@ public class CbriWrapper {
         TimeZone utc = TimeZone.getTimeZone("UTC");
         formatter.setTimeZone(utc);
         actionInfo.put("date", formatter.format(action.today));
+        actionInfo.put("revision_id", action.revisionId);
 
         actionInfo.put("architecture_type", action.architectureType);
         if(action.isCore())

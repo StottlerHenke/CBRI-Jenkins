@@ -14,6 +14,10 @@
                     <td>${it.today}</td>
                 </tr>
                 <tr>
+                    <th>Revision Id</th>
+                    <td>${it.revisionId}</td>
+                </tr>
+                <tr>
                     <th>architectureType</th>
                     <td>${it.architectureType}</td>
                 </tr>
