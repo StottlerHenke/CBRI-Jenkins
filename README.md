@@ -20,15 +20,19 @@ This will create the file **./target/cbri.hpi** that you can deploy to Jenkins.
 1. Navigate to **Manage Jenkins**.
 
 ![](./images/Install1.png)
+
 2. Scroll down and select **Manage Plugins**.
 
 ![](./images/Install2.png)
+
 3. Select the **Advanced** tab.
 
 ![](./images/Install3.png)
+
 4. **Browse** to the cbri.hpi file and then **Upload**
 
 ![](./images/Install4.png)
+
 5. Perform the Global and Project Configurations.
 
 ## Global Configuration
@@ -36,6 +40,7 @@ This will create the file **./target/cbri.hpi** that you can deploy to Jenkins.
 2. Scroll down and select **Configure System**.
 
 ![](./images/Conf1.png)
+
 3. Scroll down to **CBR Insight*** and fill out the three paths and **Save**.
 
 The first line is the path for 'und', 
@@ -49,6 +54,7 @@ and the third is for the Core Metrics perl plugin.
 **Calculate CBRI Core Metrics** build step.
 
 ![](./images/Project1.png)
+
 2. Fill out the five required sections of the build step.
 
 ![](./images/Project2.png)
