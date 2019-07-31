@@ -49,13 +49,15 @@ public class CbriWrapper {
     String username;
     String password;
     String repoId;
+    boolean includeTreeMap;
 
-    public CbriWrapper(String baseUrl, String username, String password, String repoId) {
+    public CbriWrapper(String baseUrl, String username, String password, String repoId, boolean includeTreeMap) {
         baseTarget = ClientBuilder.newClient().target(baseUrl);
         mapper = new ObjectMapper();
         this.username = username;
         this.password = password;
         this.repoId = repoId;
+        this.includeTreeMap = includeTreeMap;
     }
 
     /**
@@ -67,7 +69,7 @@ public class CbriWrapper {
         if(!loggedIn) {
             throw new IOException("Failed to log into CBRI");
         }
-
+        
         WebTarget checkTarget = baseTarget.path(MEAUSREMENT_PREFIX + repoId + MEASUREMENT_SUFFIX);
         Builder builder = checkTarget.request(MediaType.APPLICATION_JSON).header(AUTH_FIELD, "JWT " + authToken);
         Map<String, String> actionInfo = createMap(action);
@@ -117,6 +119,12 @@ public class CbriWrapper {
         actionInfo.put("useful_comment_density", "" + action.usefulCommentDensity);
         actionInfo.put("duplicate_uloc", "" + action.duplicateUloc);
         actionInfo.put("percent_duplicate_uloc", "" + action.percentDuplicateUloc);
+
+        if (includeTreeMap) {
+            actionInfo.put("components_str", action.fileTreeMap);
+        } else {
+            actionInfo.put("components_str", "");
+        }
 
         return actionInfo;
     }

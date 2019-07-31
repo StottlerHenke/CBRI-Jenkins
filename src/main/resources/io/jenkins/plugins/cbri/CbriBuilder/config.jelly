@@ -15,4 +15,7 @@
     <f:entry name="lang" title="Select Language" field="lang">
         <f:textbox />
     </f:entry>
+    <f:entry name="includeTreeMap" title="Include File Tree Map" field="includeTreeMap">
+        <f:checkbox />
+    </f:entry>
 </j:jelly>

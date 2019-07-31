@@ -29,15 +29,17 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
     private final String baseUrl;
     private final String username;
     private final String password;
+    private final boolean includeTreeMap;
 
     @DataBoundConstructor
-    public CbriBuilder(String repoId, String lang, String baseUrl, String username, String password) {
+    public CbriBuilder(String repoId, String lang, String baseUrl, String username, String password, boolean includeTreeMap) {
 
         this.repoId = repoId;
         this.lang = lang;
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
+        this.includeTreeMap = includeTreeMap;
     }
 
     public String getRepoId() {
@@ -59,6 +61,10 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
     public String getPassword() {
         return password;
     }
+    
+    public boolean getIncludeTreeMap() {
+    	return includeTreeMap;
+    }
 
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
@@ -71,7 +77,7 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
         action.revisionId = "Jenkins-Build-" + run.getNumber();
 
         //Post the actions
-        CbriWrapper cbriWrapper = new CbriWrapper(baseUrl, username, password, repoId);
+        CbriWrapper cbriWrapper = new CbriWrapper(baseUrl, username, password, repoId, includeTreeMap);
         cbriWrapper.postAction(action, listener);
 
         run.addAction(action);
@@ -153,6 +159,7 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
             if (value.length() == 0)
                 return FormValidation.error("Missing lang");
             if (!SUPPORTED_LANGUAGES.contains(value))
+                //XXX: since there are only 6 options, would it be better to use a drop down menu?
                 return FormValidation.error("Language must be one of: " + SUPPORTED_LANGUAGES);
 
             return FormValidation.ok();
