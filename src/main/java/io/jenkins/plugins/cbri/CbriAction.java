@@ -33,6 +33,8 @@ public class CbriAction implements RunAction2 {
     int numFilesInCore = 1;
     int numFilesOverlyComplex = 1;
 
+    String fileTreeMap = "";
+
     public CbriAction() {
 
         today = new Date();
@@ -128,4 +130,8 @@ public class CbriAction implements RunAction2 {
     }
 
     public String getRevisionId() { return revisionId; }
+
+    public String getFileTreeMap() {
+        return fileTreeMap;
+    }
 }
