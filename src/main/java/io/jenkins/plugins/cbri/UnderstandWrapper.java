@@ -58,7 +58,7 @@ public class UnderstandWrapper {
         String coreDir = workspace + "/understand";
         String uperlCommand = undPerl + " " +
                 pluginPath +  " -db " + undDb +
-                " -createMetrics -outputDir " + coreDir;
+                " -createMetrics -DuplicateMinLines 10 -outputDir " + coreDir;
         listener.getLogger().println(uperlCommand);
         exitCode = runCommand(uperlCommand, listener);
 
