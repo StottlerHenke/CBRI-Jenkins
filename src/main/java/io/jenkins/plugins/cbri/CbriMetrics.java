@@ -73,6 +73,11 @@ public class CbriMetrics {
                 toReturn.append("\n");
             }
         }
+
+        br.close();
+        reader.close();
+        in.close();
+
         return toReturn.toString();
     }
 
