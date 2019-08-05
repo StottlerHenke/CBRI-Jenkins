@@ -22,7 +22,10 @@
 # 1.18 Ignore includes and imports when counting duplicate code
 # 1.19 Fix div by zero error if the project has 0 useful lines of code
 # 1.20 Round percentages
-our $version = "1.20";
+# 1.21 Fix random "tree" error
+# 1.22 Handle Javascript Class-Functions correctly
+# 1.23 Add more decimal values to propagation cost
+our $version = "1.23";
 
 use strict;
 use Data::Dumper;
@@ -41,7 +44,7 @@ our $funcKindString = "ada entry, ada function, ada package, ada procedure, ada 
   ."jovial file, jovial subroutine,"
   ."pascal compunit, pascal function, pascal procedure,"
   ."vhdl procedure, vhdl function, vhdl process, vhdl architecture,"
-  ."php function";
+  ."web function";
   
 our $abort_called;
 our @visibilityMatrix;
@@ -189,25 +192,27 @@ sub generate {
   $fileCount = scalar @fileObjList; #Number of files in the project
   
   #identify duplicate code
-  foreach(values %codeHashes){
-    push @matches, $_ if $_->getLocCount > 1;
-  }
-  removeDuplicates();
-  fillMatchValues();
-  removeDuplicates();
+   foreach(values %codeHashes){
+     push @matches, $_ if $_->getLocCount > 1;
+   }
+    removeDuplicates();
+    fillMatchValues();
+    removeDuplicates();
   
   if ($createMetricsFiles){
     my $dupFile = $outputDir.$slash."duplicates.txt";
     open (FILE,'>',$dupFile) || die ("Couldn't open $dupFile $!\n");
   }
-  my $duplicateLOC = 0;
+   my $duplicateLOC = 0;
+   my $matchOutputString;
   foreach my $match (@matches){
     $match->updateFileMetrics();
     $duplicateLOC +=($match->getNumLines * $match->getLocCount);
-    print FILE $match->print() if $createMetricsFiles;
+	$matchOutputString .= $match->printMatch();
   }
+  print FILE $matchOutputString if $createMetricsFiles;
   close FILE if $createMetricsFiles;
-
+  
   #Populate Design Structure Matrix for each file based off of Understand dependencies
   my @designStructureMatrix; #Array holding the DSM
   foreach my $fileObj (@fileObjList){
@@ -215,7 +220,6 @@ sub generate {
         $designStructureMatrix[$fileObj->{id}][$fileObjsByEntID{$depID}->{id}]= 1;
     }             
   }
-
   if($createTestFiles){
     #Print the Design Structure matrix to an output file
     add_progress($report,.02,"Saving DSM to output file");
@@ -567,11 +571,16 @@ sub generate {
   close FILE;
   
   
+  print "DEBUG: sumVFO: ".(sum @vfoList)."\n";
+  print "DEBUG: fileCount: $fileCount\n";
+  print "DEBUG: equation: ".(sum @vfoList)." * 100 / $fileCount^2 \n";
+  print "DEBUG: Answer: ".((sum @vfoList) *100/($fileCount * $fileCount))."\n";
+  
   my @metrics;
   my @metricNames;
   push @metrics,$projectName;
   push @metricNames,"Project Name";
-  push @metrics, sprintf("%.1f",((sum @vfoList) *100/($fileCount * $fileCount))) if $fileCount;
+  push @metrics, sprintf("%.3f",((sum @vfoList) *100/($fileCount * $fileCount))) if $fileCount;
   push @metricNames,"Propagation Cost" if $fileCount;;
   push @metrics,$projectArchitectType;
   push @metricNames,"Architecture Type";
@@ -2320,7 +2329,7 @@ sub new{
   my $class = shift;
   my $id = shift;
   my $ent = shift;
-  my $hasClasses = $ent->filerefs("define","class",1);
+  my $hasClasses = $ent->filerefs("define","class ~function",1);
   my $depends = $ent->depends();
   my $dependCount = 0;
   $dependCount = $depends->keys() if $depends && ! $hasClasses;
@@ -2468,7 +2477,7 @@ sub updateFileMetrics{
   }
 }
 
-sub print{
+sub printMatch{
   my ($self) = @_;
   my $string = $self->{numLines}." useful lines duplicated in ".$self->{locCount}." locations\n";
   for (my $i;$i<$self->{locCount};$i++){
