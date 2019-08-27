@@ -48,24 +48,23 @@ public class UnderstandWrapper {
         " add " + workspace +
         " analyze " + undDb;
         int exitCode = runCommand(undCommand, listener);
-
-        /*if(exitCode != 0)
+        if(exitCode != 0)
             throw new IOException("Understand analysis failed.");
         else
             listener.getLogger().println("\tUnderstand analysis succeeded");
-*/
+
+
         // Run core metrics
         String coreDir = workspace + "/understand";
         String uperlCommand = undPerl + " " +
                 pluginPath +  " -db " + undDb +
                 " -createMetrics -DuplicateMinLines 10 -outputDir " + coreDir;
         exitCode = runCommand(uperlCommand, listener);
-
-        /*if(exitCode != 0)
+        if(exitCode != 0)
             throw new IOException("Understand core metrics failed.");
         else
             listener.getLogger().println("\tUnderstand core metrics succeeded");
-*/
+
 
         // Read metrics in from a file and return the them
         CbriMetrics metrics = new CbriMetrics();
