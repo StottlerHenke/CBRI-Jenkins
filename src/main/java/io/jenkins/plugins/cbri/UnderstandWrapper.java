@@ -18,6 +18,7 @@ public class UnderstandWrapper {
     private String undPerl;
     private String pluginPath;
 
+
     public UnderstandWrapper(String undPath, String undPerl, String pluginPath) {
 
         this.undPath = undPath;
@@ -46,30 +47,29 @@ public class UnderstandWrapper {
         " -quiet create -languages " + language +
         " add " + workspace +
         " analyze " + undDb;
-        listener.getLogger().println(undCommand);
         int exitCode = runCommand(undCommand, listener);
 
-        if(exitCode != 0)
+        /*if(exitCode != 0)
             throw new IOException("Understand analysis failed.");
         else
             listener.getLogger().println("\tUnderstand analysis succeeded");
-
+*/
         // Run core metrics
         String coreDir = workspace + "/understand";
         String uperlCommand = undPerl + " " +
                 pluginPath +  " -db " + undDb +
                 " -createMetrics -DuplicateMinLines 10 -outputDir " + coreDir;
-        listener.getLogger().println(uperlCommand);
         exitCode = runCommand(uperlCommand, listener);
 
-        if(exitCode != 0)
+        /*if(exitCode != 0)
             throw new IOException("Understand core metrics failed.");
         else
             listener.getLogger().println("\tUnderstand core metrics succeeded");
+*/
 
         // Read metrics in from a file and return the them
         CbriMetrics metrics = new CbriMetrics();
-        return metrics.loadMetrics(coreDir, listener);
+        return metrics.loadMetrics(workspace, listener);
     }
 
     /**
@@ -77,8 +77,10 @@ public class UnderstandWrapper {
      */
     public int runCommand(String command, TaskListener listener) throws IOException, InterruptedException {
 
+        //listener.getLogger().println("Run Command: " + command);
+
         //May say 'This license has expired.' while still returning error code 0. In this case, all is not well.
-        Process process = Runtime.getRuntime().exec(command);
+        /*Process process = Runtime.getRuntime().exec(command);
         int exitCode = process.waitFor();
 
         String line;
@@ -97,5 +99,12 @@ public class UnderstandWrapper {
         input.close();
 
         return exitCode;
+        */
+
+        listener.getLogger().println("The pipeline should run this command BEFORE CbriBuilder:");
+        listener.getLogger().println(command);
+        listener.getLogger().println();
+
+        return 0;
     }
 }

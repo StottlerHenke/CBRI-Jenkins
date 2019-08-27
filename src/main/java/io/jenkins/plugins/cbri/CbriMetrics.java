@@ -1,5 +1,6 @@
 package io.jenkins.plugins.cbri;
 
+import hudson.FilePath;
 import hudson.model.TaskListener;
 
 import java.io.*;
@@ -13,13 +14,15 @@ import java.lang.StringBuilder;
  */
 public class CbriMetrics {
 
+    private final static String UND_DIR = "understand";
+
     public CbriMetrics() {
 
     }
 
-    public CbriAction loadMetrics(String coreMetricsDir, TaskListener listener) throws IOException {
+    public CbriAction loadMetrics(FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
 
-        HashMap<String, String> map = readMetrics(coreMetricsDir, listener);
+        HashMap<String, String> map = readMetrics(workspace, listener);
         CbriAction action = new CbriAction();
 
         action.today = new Date();
@@ -50,22 +53,27 @@ public class CbriMetrics {
         action.numFilesOverlyComplex = (int) Math.round(action.numFiles * (action.percentFilesOverlyComplex / 100.0));
 
         //File Tree Map
-        action.fileTreeMap = readTreeMap(coreMetricsDir);
+        action.fileTreeMap = readTreeMap(workspace, listener);
 
         return action;
     }
 
-    protected String readTreeMap(String coreMetricsDir) throws IOException {
-        String filename = coreMetricsDir + File.separator + "treemap.html";
-        InputStream in = new FileInputStream(filename);
+    protected String readTreeMap(FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
+
+        StringBuilder toReturn = new StringBuilder();
+
+        //String filename = coreMetricsDir + File.separator + "treemap.html";
+        FilePath metricsFile = new FilePath(workspace, UND_DIR + File.separator + "treemap.html");
+        listener.getLogger().println("Attempting to read treemap from: " + metricsFile);
+
+        InputStream in = metricsFile.read();
         Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
         BufferedReader br = new BufferedReader(reader);
 
         String line = br.readLine(); // Reading header, Ignoring
         int node = 0; //ignore first two lines with "[]"
-        StringBuilder toReturn = new StringBuilder();
         while ((line = br.readLine()) != null && !line.isEmpty()) {
-            line = line.replaceAll("\'","").replaceAll(" ", "");
+            line = line.replaceAll("\'", "").replaceAll(" ", "");
             int index1 = line.indexOf('[');
             int index2 = line.indexOf(']');
             if (index1 > -1 && index2 > -1 && node++ > 1) {
@@ -136,21 +144,25 @@ public class CbriMetrics {
      * "Overly Complex Core Files","14%"
      * "Overly Complex Central Files","14%"
      */
-    public HashMap<String, String>  readMetrics(String coreMetricsDir, TaskListener listener) throws IOException {
+    public HashMap<String, String>  readMetrics(FilePath workspace, TaskListener listener) throws IOException, InterruptedException {
 
         HashMap<String, String> map = new HashMap<>();
 
-        String filename = coreMetricsDir + File.separator + "projectMetrics.csv";
-        InputStream in = new FileInputStream(filename);
+        //String filename = coreMetricsDir + File.separator + "projectMetrics.csv";
+        FilePath metricsFile = new FilePath(workspace, UND_DIR + File.separator + "projectMetrics.csv");
+        listener.getLogger().println("Attempting to read metrics from: " + metricsFile);
+
+        InputStream in = metricsFile.read();
         Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
         BufferedReader br = new BufferedReader(reader);
 
         String line = br.readLine(); // Reading header, Ignoring
         while ((line = br.readLine()) != null && !line.isEmpty()) {
             String[] fields = line.split("\",\""); //Look for ","
-            if(fields.length != 2 ) throw new IOException("Incorrectly formatted projectMetrics.csv, line: " + line);
+            if (fields.length != 2)
+                throw new IOException("Incorrectly formatted projectMetrics.csv, line: " + line);
             String name = fields[0].replaceFirst("\"", ""); // Remove leading "
-            String value = fields[1].substring(0, fields[1].length()-1); // Remove training "
+            String value = fields[1].substring(0, fields[1].length() - 1); // Remove training "
             value = value.replaceAll(",", "");
             value = value.replaceAll("%", "");
             value = value.trim();
@@ -160,6 +172,9 @@ public class CbriMetrics {
 
         }
         br.close();
+        reader.close();
+        in.close();
+
         return map;
     }
 }
