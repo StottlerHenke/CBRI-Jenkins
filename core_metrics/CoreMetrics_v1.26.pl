@@ -25,7 +25,10 @@
 # 1.21 Fix random "tree" error
 # 1.22 Handle Javascript Class-Functions correctly
 # 1.23 Add more decimal values to propagation cost
-our $version = "1.23";
+# 1.24 Always show the core size metrics, even if not a core-periphery project
+# 1.25 Add secondary core groups - cyclic groups in the program that many other components interact with. Note in original papers 2019-09-06
+# 1.26 Fix slashes in test files directory name
+our $version = "1.26";
 
 use strict;
 use Data::Dumper;
@@ -225,7 +228,7 @@ sub generate {
     add_progress($report,.02,"Saving DSM to output file");
     Understand::Gui::yield();
     return if $abort_called;
-    $outputFileName = $outputDir."\\1. $projectName Initial Design Structure Matrix.txt";
+    $outputFileName = $outputDir."${slash}1. $projectName Initial Design Structure Matrix.txt";
     printSquareMatrix(\@titlesList ,\@designStructureMatrix,$outputFileName);
   }
 
@@ -247,7 +250,7 @@ sub generate {
     add_progress($report,.02,"Print the Transitive Structure matrix to an output file");
     Understand::Gui::yield();
     return if $abort_called;
-    $outputFileName = $outputDir."\\2. $projectName Visibility Matrix.txt";
+    $outputFileName = $outputDir."${slash}2. $projectName Visibility Matrix.txt";
     printSquareMatrix(\@titlesList ,\@visibilityMatrix,$outputFileName);
    
   }
@@ -288,7 +291,7 @@ sub generate {
   }
 
   if($createTestFiles){   
-    $outputFileName = $outputDir."\\3. $projectName Visibility Fan In and Out.txt";
+    $outputFileName = $outputDir."${slash}3. $projectName Visibility Fan In and Out.txt";
     my $length = length longestItem(@titlesList);
     open (FILE,'>',"$outputFileName") || die ("Couldn't open $outputFileName $!\n");
       print FILE sprintf("%${length}s VFI VFO  Group   Size\n",'');
@@ -315,14 +318,13 @@ sub generate {
       $projectArchitectType = "Multi-Core";
       if (! $secondLargestID || $cyclicGroups{$largestGroupID}{size} >= $cyclicGroups{$secondLargestID}{size} * 1.5){
         $projectArchitectType = "Borderline Core-Periphery";
-        $coreGroup = $largestGroupID;
       }
     }
     if ($cyclicGroups{$largestGroupID}{size} >= $fileCount *.06){
       $projectArchitectType = "Core-Periphery";
+    }
       $coreGroup = $largestGroupID;
     }
-  }
 
   #Median Partition Component Types
   #First calculate the median VFI and VFO
@@ -382,7 +384,7 @@ sub generate {
     add_progress($report,.02,"Print the Median matrix to an output file");
     return if $abort_called;
     Understand::Gui::yield();
-    $outputFileName = $outputDir."\\4. $projectName Median Matrix.txt";
+    $outputFileName = $outputDir."${slash}4. $projectName Median Matrix.txt";
     printSquareMatrix(\@medianTitles ,\@medianDSM,$outputFileName);
   }
 
@@ -413,6 +415,9 @@ sub generate {
       }elsif($file->{vfi}< $VFIc && $file->{vfo} >= $VFOc){
           $file->{componentCP} = "Control";
           $cpGroupSize{Control}++;
+      }else{
+        $file->{componentCP} = "Secondary";
+        $cpGroupSize{Secondary}++;
       }
     }
     
@@ -442,7 +447,7 @@ sub generate {
       add_progress($report,.02,"Print the Core-Periphery matrix to an output file");
       return if $abort_called;
       Understand::Gui::yield();
-      $outputFileName = $outputDir."\\5. $projectName Core-Periphery Matrix.txt";
+      $outputFileName = $outputDir."${slash}5. $projectName Core-Periphery Matrix.txt";
       printSquareMatrix(\@coreTitles ,\@corePeripheryDSM,$outputFileName);
     }
   }
@@ -571,11 +576,6 @@ sub generate {
   close FILE;
   
   
-  print "DEBUG: sumVFO: ".(sum @vfoList)."\n";
-  print "DEBUG: fileCount: $fileCount\n";
-  print "DEBUG: equation: ".(sum @vfoList)." * 100 / $fileCount^2 \n";
-  print "DEBUG: Answer: ".((sum @vfoList) *100/($fileCount * $fileCount))."\n";
-  
   my @metrics;
   my @metricNames;
   push @metrics,$projectName;
@@ -587,6 +587,9 @@ sub generate {
   if ($fileCount){
     if ($coreGroup){
       push @metrics, sprintf("%.1f%",($cyclicGroups{$largestGroupID}{size}*100/$fileCount));
+      push @metricNames,"Core Size";
+    }else{
+      push @metrics, "0%";
       push @metricNames,"Core Size";
     }
     push @metrics, sprintf("%.1f%",($mGroupSize{Core}*100/$fileCount));
@@ -1181,6 +1184,7 @@ return << 'ENDTREEMAPHTML'
           ['Peripheral','Project',0,0,'Peripheral'],
           ['Shared','Project',0,0,'Shared'],
           ['Core','Project',0,0,'Core'],
+          ['Secondary','Project',0,0,'Secondary-Cores'],
           ['Control','Project',0,0,'Control'],
           ['Isolate','Project',0,0,'Isolate'],
           ['Central','Project',0,0,'Central'],
@@ -1457,8 +1461,8 @@ nodes.forEach(function(node){
 });
 
 // Setup Global information
-var groupOrder = ["Shared","Core","Peripheral","Control","Isolate"];
-var nodeColors = {Shared: "#69ad67",Core: "#ea6a66",Peripheral: "#ebebeb",Control: "#ebed62",Isolate: "#eabe62"};
+var groupOrder = ["Shared","Core","Peripheral","Control","Isolate","Secondary"];
+var nodeColors = {Shared: "#69ad67",Core: "#ea6a66",Peripheral: "#ebebeb",Control: "#ebed62",Isolate: "#eabe62",Secondary: "#ffffff"};
 var medianNames ={Shared:"Shared-M",Core:"Central",Peripheral:"Periphery-M",Control:"Control-M",Isolate: "Isolate"};
 var baseColor = "#1a12f0";
 var backgroundColor = "lightgray";
@@ -1793,6 +1797,10 @@ function handleMouseMove(evt){
           message="<span style=\"color:"+baseColor+"\">Peripheral components("+size+" Files)  These files do not interact with the Core</span>";
           title= "Peripheral components("+size+" Files)";
           break;
+        case("Secondary"):
+          message="<span style=\"color:"+baseColor+"\">Secondary-Core components("+size+" Files)  These files are secondary cyclic groups in the program that many other components interact with</span>";
+          title= "Secondary-Core components("+size+" Files)";
+          break;
         case("Control"):
           message="<span style=\"color:"+baseColor+"\">Control components("+size+" Files)  These files make use of other components but are not used by other components</span>";
           title= "Control components("+size+" Files)";
@@ -2044,6 +2052,8 @@ sub sortByCorePeriphery{
     if ($b->{componentCP} eq "Core"){return 1}
     if ($a->{componentCP} eq "Peripheral"){return -1}
     if ($b->{componentCP} eq "Peripheral"){return 1}
+    if ($a->{componentCP} eq "Secondary"){return -1}
+    if ($b->{componentCP} eq "Secondary"){return 1}
     if ($a->{componentCP} eq "Control"){return -1}
     if ($b->{componentCP} eq "Control"){return 1}
     #Should not get here since both would have to be  "isolate"
