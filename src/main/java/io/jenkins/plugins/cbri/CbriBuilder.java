@@ -90,7 +90,7 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
-        protected final static String SUPPORTED_LANGUAGES = "Ada, C, C#, C++, FORTRAN, Java";
+        protected final static String SUPPORTED_LANGUAGES = "C, C#, C++, Java";
 
         private String undPath;
         private String undPerl;
@@ -159,7 +159,7 @@ public class CbriBuilder extends Builder implements SimpleBuildStep {
             if (value.length() == 0)
                 return FormValidation.error("Missing lang");
             if (!SUPPORTED_LANGUAGES.contains(value))
-                //XXX: since there are only 6 options, would it be better to use a drop down menu?
+                //XXX: since there are only 4 options, would it be better to use a drop down menu?
                 return FormValidation.error("Language must be one of: " + SUPPORTED_LANGUAGES);
 
             return FormValidation.ok();
